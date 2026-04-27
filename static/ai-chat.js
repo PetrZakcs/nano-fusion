@@ -368,8 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sendBtn.onclick = () => handleInput(chatInput.value);
     chatInput.onkeypress = (e) => { if (e.key === 'Enter') handleInput(chatInput.value); };
 
-    // --- Auto-pop logic (Disabled for now) ---
-    /*
+    // --- Auto-pop logic (Delayed) ---
     setTimeout(() => {
         // If chat isn't already open, open it
         if (chatWindow.style.display !== 'flex') {
@@ -378,5 +377,4 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('AI Chat: Auto-pop triggered');
         }
     }, 4000);
-    */
 });
