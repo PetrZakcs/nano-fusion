@@ -200,14 +200,18 @@ create table if not exists configurator_prices (
 
 -- Seed initial price items
 insert into configurator_prices (item_key, label, price, unit) values
-  ('cleaning_roofs', 'Čištění střech', 190, 'Kč/m²'),
-  ('cleaning_facades', 'Čištění fasád', 150, 'Kč/m²'),
-  ('cleaning_pavement', 'Čištění dlažeb', 120, 'Kč/m²'),
-  ('solar_panels', 'Solární panely', 80, 'Kč/m²'),
-  ('graffiti_removal', 'Odstranění graffiti', 250, 'Kč/m²'),
-  ('nano_roofs', 'Nano-ochrana střech', 220, 'Kč/m²'),
-  ('nano_facades', 'Nano-ochrana fasád', 180, 'Kč/m²'),
-  ('nano_pavement', 'Nano-ochrana dlažeb', 160, 'Kč/m²')
+  ('roof', 'Čištění střech', 190, 'Kč/m²'),
+  ('facade', 'Čištění fasád', 150, 'Kč/m²'),
+  ('pavement', 'Čištění dlažeb', 120, 'Kč/m²'),
+  ('pv', 'Solární panely', 80, 'Kč/m²'),
+  ('graffiti', 'Odstranění graffiti', 250, 'Kč/m²'),
+  ('industrial', 'Průmyslové čištění', 130, 'Kč/m²'),
+  ('facade-paint', 'Nátěry fasád', 200, 'Kč/m²'),
+  ('roof-paint', 'Nátěry střech', 180, 'Kč/m²'),
+  ('impregnation', 'Nano impregnace', 70, 'Kč/m²'),
+  ('antislip', 'Protiskluzová úprava', 120, 'Kč/m²'),
+  ('ceramfloor', 'IG CeramFloor', 250, 'Kč/m²'),
+  ('antibac', 'Antibakteriální ochrana', 80, 'Kč/m²')
 on conflict (item_key) do nothing;
 
 -- ============================================================

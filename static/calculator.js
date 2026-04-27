@@ -27,9 +27,23 @@ const injectCalculator = async () => {
       
       if (!error && remotePrices && remotePrices.length > 0) {
         console.log('NANOfusion: Ceny načteny z Admin Panelu');
-        // Přepíšeme defaultní ceny těmi z databáze
+        
+        // Mapování pro případ, že klíče v DB nesedí na IDs v JS
+        const keyMappings = {
+          'cleaning_roofs': 'roof',
+          'cleaning_facades': 'facade',
+          'cleaning_pavement': 'pavement',
+          'solar_panels': 'pv',
+          'graffiti_removal': 'graffiti',
+          'facade_paint': 'facade-paint',
+          'roof_paint': 'roof-paint'
+        };
+
         services = services.map(localS => {
-          const remoteS = remotePrices.find(r => r.item_key === localS.id);
+          const remoteS = remotePrices.find(r => 
+            r.item_key === localS.id || 
+            keyMappings[r.item_key] === localS.id
+          );
           return remoteS ? { ...localS, price: remoteS.price } : localS;
         });
       }

@@ -424,6 +424,8 @@ const observeAll = () => {
   if (servicesHeading) {
     servicesHeading.style.color = '#f59e0b';
     servicesHeading.style.fontWeight = '800';
+    servicesHeading.style.fontSize = '1.25rem';
+    servicesHeading.style.marginBottom = '1.5rem';
     const servicesUl = servicesHeading.parentElement.querySelector('ul');
     if (servicesUl && !servicesUl.dataset.finalized) {
       const serviceItems = [
@@ -449,8 +451,9 @@ const observeAll = () => {
         a.href = '#';
         a.textContent = item.name;
         a.className = 'footer-service-link';
-        a.style.color = '#f59e0b';
-        a.style.fontWeight = '700';
+        a.style.color = '#94a3b8';
+        a.style.fontWeight = '500';
+        a.style.fontSize = '0.875rem';
         a.style.transition = 'all 0.3s ease';
         a.style.display = 'block';
 
@@ -479,7 +482,20 @@ const observeAll = () => {
   if (contactHeading) {
     contactHeading.style.color = '#f59e0b';
     contactHeading.style.fontWeight = '800';
+    contactHeading.style.fontSize = '1.25rem';
+    contactHeading.style.marginBottom = '1.5rem';
+
+    // Style contact info items to match description
     const contactCol = contactHeading.parentElement;
+    const contactItems = contactCol.querySelectorAll('p, span, li, a:not(.footer-service-link)');
+    contactItems.forEach(el => {
+      if (el !== contactHeading && !el.closest('.footer-map-container')) {
+        el.style.fontSize = '0.875rem';
+        el.style.fontWeight = '500';
+        el.style.color = '#94a3b8';
+      }
+    });
+
     if (contactCol && !contactCol.querySelector('.footer-map-container')) {
       const mapContainer = document.createElement('div');
       mapContainer.className = 'footer-map-container section-reveal';

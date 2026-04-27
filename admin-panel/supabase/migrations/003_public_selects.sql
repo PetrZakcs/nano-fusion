@@ -44,3 +44,7 @@ DROP POLICY IF EXISTS "Public can read service reviews" ON public.service_review
 CREATE POLICY "Public can read service reviews" ON public.service_reviews
   FOR SELECT USING (true);
 
+-- Služby (Základní info)
+DROP POLICY IF EXISTS "Public can read active services" ON public.services;
+CREATE POLICY "Public can read active services" ON public.services
+  FOR SELECT USING (is_active = true);

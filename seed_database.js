@@ -41,12 +41,21 @@ async function seed() {
   if (aErr) console.error('❌ Chyba články:', aErr);
   else console.log('✅ Články nahrány.');
 
-  // 3. Configurator Prices (Update label and units)
+  // 3. Configurator Prices (Synchronizace s frontendem)
   console.log('💰 Synchronizuji ceník...');
   const { error: pErr } = await supabase.from('configurator_prices').upsert([
-    { item_key: 'cleaning_roofs', label: 'Čištění střech', price: 190, unit: 'Kč/m²' },
-    { item_key: 'cleaning_facades', label: 'Čištění fasád', price: 150, unit: 'Kč/m²' },
-    { item_key: 'cleaning_pavement', label: 'Čištění dlažeb', price: 120, unit: 'Kč/m²' }
+    { item_key: 'roof', label: 'Čištění střech', price: 190, unit: 'Kč/m²' },
+    { item_key: 'facade', label: 'Čištění fasád', price: 150, unit: 'Kč/m²' },
+    { item_key: 'pavement', label: 'Čištění dlažeb', price: 120, unit: 'Kč/m²' },
+    { item_key: 'pv', label: 'Solární panely', price: 80, unit: 'Kč/m²' },
+    { item_key: 'graffiti', label: 'Odstranění graffiti', price: 250, unit: 'Kč/m²' },
+    { item_key: 'industrial', label: 'Průmyslové čištění', price: 130, unit: 'Kč/m²' },
+    { item_key: 'facade-paint', label: 'Nátěry fasád', price: 200, unit: 'Kč/m²' },
+    { item_key: 'roof-paint', label: 'Nátěry střech', price: 180, unit: 'Kč/m²' },
+    { item_key: 'impregnation', label: 'Nano impregnace', price: 70, unit: 'Kč/m²' },
+    { item_key: 'antislip', label: 'Protiskluzová úprava', price: 120, unit: 'Kč/m²' },
+    { item_key: 'ceramfloor', label: 'IG CeramFloor', price: 250, unit: 'Kč/m²' },
+    { item_key: 'antibac', label: 'Antibakteriální ochrana', price: 80, unit: 'Kč/m²' }
   ], { onConflict: 'item_key' });
   if (pErr) console.error('❌ Chyba ceník:', pErr);
   else console.log('✅ Ceník aktualizován.');

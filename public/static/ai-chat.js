@@ -136,11 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
     sendBtn.onclick = () => handleInput(chatInput.value);
     chatInput.onkeypress = (e) => { if (e.key === 'Enter') handleInput(chatInput.value); };
 
-    // Auto-pop
+    // Auto-pop (Disabled for now)
+    /*
     setTimeout(() => {
         if (chatWindow.style.display !== 'flex') {
             chatWindow.style.display = 'flex';
             if (chatState === 'INIT') processLogic('', '');
         }
     }, 5000);
+    */
 });

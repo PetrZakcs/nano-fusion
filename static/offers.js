@@ -199,11 +199,27 @@ const syncRemotePrices = async () => {
     const { data, error } = await supabase.from('configurator_prices').select('item_key, price');
     if (!error && data) {
       data.forEach(item => {
+        // 1. Přímá shoda (např. 'roof' -> 'roof')
         if (remotePrices[item.item_key] !== undefined) {
           remotePrices[item.item_key] = item.price;
+        } else {
+          // 2. Mapování starých nebo alternativních klíčů
+          const mappings = {
+            'cleaning_roofs': 'roof',
+            'cleaning_facades': 'facade',
+            'cleaning_pavement': 'pavement',
+            'solar_panels': 'pv',
+            'graffiti_removal': 'graffiti',
+            'facade_paint': 'facade-paint',
+            'roof_paint': 'roof-paint'
+          };
+          const mappedKey = mappings[item.item_key];
+          if (mappedKey && remotePrices[mappedKey] !== undefined) {
+            remotePrices[mappedKey] = item.price;
+          }
         }
       });
-      console.log('Offers: Ceny synchronizovány s Adminem');
+      console.log('Offers: Ceny synchronizovány (Remote: ' + data.length + ')');
     }
   } catch (e) {
     console.warn('Offers: Cloud Sync cen nedostupný.');
