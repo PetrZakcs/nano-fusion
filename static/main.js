@@ -160,118 +160,125 @@ const observeAll = () => {
     }
   });
 
-  const galleryShowcaseData = [
-    {
-      id: 1,
-      title: 'Kompletní renovace střechy Praha - RD',
-      category: 'ČIŠTĚNÍ STŘECH',
-      description: 'Důkladná hloubková očista střešní krytiny rodinného domu v Praze. Odstranění organických nánosů (mechy, řasy) a následná aplikace hydrofobní nano-impregnace, která zajišťuje samočistící schopnost a prodlužuje životnost materiálu o desítky let.',
-      image: 'https://images.unsplash.com/photo-1635339001328-8007ebfd4a60?auto=format&fit=crop&q=80&w=1200',
-      photos: [
-        'https://images.unsplash.com/photo-1635339001328-8007ebfd4a60?auto=format&fit=crop&q=80&w=1200',
-        'https://images.unsplash.com/photo-1632759145351-1d592919f522?auto=format&fit=crop&q=80&w=1200',
-        'https://images.unsplash.com/photo-1516655855035-d5215bc56151?auto=format&fit=crop&q=80&w=1200'
-      ],
-      hasVideo: true
-    },
-    {
-      id: 2,
-      title: 'Nátěr a ošetření dlažby Poruba',
-      category: 'ČIŠTĚNÍ DLAŽEB',
-      description: 'Oživení zašlé zámkové dlažby pomocí speciálního nátěru a hloubkové nano-ochrany. Povrch nyní odpuzuje vodu i mastnotu, což usnadňuje běžnou údržbu a zabraňuje růstu travin ve spárách.',
-      image: 'https://images.unsplash.com/photo-1584622502840-771746be22f2?auto=format&fit=crop&q=80&w=1200',
-      photos: [
-        'https://images.unsplash.com/photo-1584622502840-771746be22f2?auto=format&fit=crop&q=80&w=1200',
-        'https://images.unsplash.com/photo-1595113316349-9fa4eb24f884?auto=format&fit=crop&q=80&w=1200'
-      ],
-      hasVideo: false
-    },
-    {
-      id: 3,
-      title: 'Čištění fasády bytového domu Brno',
-      category: 'RENOVACE FASÁD',
-      description: 'Sanace fasády bytového komplexu v Brně s důrazem na likvidaci plísní. Realizace zahrnovala chemické čištění pod nízkým tlakem a nanesení prémiového nátěru s fotokatalytickým efektem proti smogu.',
-      image: 'https://images.unsplash.com/photo-1590480500072-5561504930bc?auto=format&fit=crop&q=80&w=1200',
-      photos: [
-        'https://images.unsplash.com/photo-1590480500072-5561504930bc?auto=format&fit=crop&q=80&w=1200',
-        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80&w=1200'
-      ],
-      hasVideo: true
-    },
-    {
-      id: 4,
-      title: 'Údržba solárních panelů Ostrava',
-      category: 'SERVIS FVE',
-      description: 'Zlepšení energetické výtěžnosti fotovoltaické elektrárny o 15 % díky šetrnému odstranění prachu a pylů demineralizovanou vodou. Na povrch byla následně nanesena ultra-tenká vrstva nano-sklenné ochrany.',
-      image: 'https://images.unsplash.com/photo-1509391366360-fe5bb65830bb?auto=format&fit=crop&q=80&w=1200',
-      photos: [
-        'https://images.unsplash.com/photo-1509391366360-fe5bb65830bb?auto=format&fit=crop&q=80&w=1200',
-        'https://images.unsplash.com/photo-1545209590-5460596395ee?auto=format&fit=crop&q=80&w=1200'
-      ],
-      hasVideo: false
+  // Dynamic Gallery Data Fetching
+  let galleryShowcaseData = [];
+
+  const fetchGalleryData = async () => {
+    try {
+      const { supabase } = await import('./supabase-config.js');
+      const { data, error } = await supabase
+        .from('realizations')
+        .select('*, realization_photos(*)')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        galleryShowcaseData = data.map(r => ({
+          id: r.id,
+          title: r.title,
+          category: (r.work_type || 'Realizace').toUpperCase(),
+          description: r.description || '',
+          image: r.realization_photos?.sort((a, b) => a.order_index - b.order_index)[0]?.url || 'https://images.unsplash.com/photo-1635339001328-8007ebfd4a60?w=800',
+          photos: r.realization_photos?.sort((a, b) => a.order_index - b.order_index).map(p => p.url) || [],
+          location: r.location,
+          duration: r.duration
+        }));
+        renderGalleryItems();
+      }
+    } catch (e) {
+      console.error('Gallery Fetch Error:', e);
     }
-  ];
+  };
+
+  const renderGalleryItems = () => {
+    const scroller = document.getElementById('gallery-scroller-inner');
+    if (!scroller) return;
+
+    scroller.innerHTML = galleryShowcaseData.map(item => `
+      <div class="gallery-item-v" onclick="window.nnf_openGallery('${item.id}')" style="flex: 0 0 450px; background: #0f172a; border-radius: 2rem; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.3s ease;">
+          <div style="height: 250px; position: relative;">
+              <img src="${item.image}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+              <div class="gallery-item-overlay" style="position:absolute; inset:0; background:linear-gradient(to top, rgba(15,23,42,0.6), transparent); opacity:0; transition:opacity 0.3s; display:flex; align-items:center; justify-content:center;">
+                <span style="background:white; color:#0f172a; padding:0.75rem 1.5rem; border-radius:1rem; font-weight:800; font-size:0.8rem; transform:translateY(20px); transition:transform 0.3s;">DETAIL PROJEKTU</span>
+              </div>
+          </div>
+          <div style="padding: 2rem;">
+              <div style="color: #f59e0b; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.1em; margin-bottom: 0.5rem;">${item.category}</div>
+              <h3 style="color: white; font-weight: 800; font-size: 1.25rem; margin-bottom: 1rem; line-height: 1.2;">${item.title}</h3>
+              <div style="color: #94a3b8; font-size: 0.875rem; line-height: 1.6; height: 3.2rem; overflow: hidden;">${item.description.replace(/<[^>]*>/g, '').substring(0, 85)}...</div>
+          </div>
+      </div>
+    `).join('');
+  };
+
 
   window.nnf_openGallery = (id) => {
-    const item = galleryShowcaseData.find(g => g.id === id);
+    const item = galleryShowcaseData.find(g => String(g.id) === String(id));
     if (!item) return;
 
     let overlay = document.getElementById('gallery-modal-overlay');
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'gallery-modal-overlay';
-      overlay.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.9); backdrop-filter:blur(15px); z-index:999999; display:none; align-items:center; justify-content:center; padding:20px;';
+      overlay.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.95); backdrop-filter:blur(20px); z-index:999999; display:none; align-items:center; justify-content:center; padding:20px;';
       document.body.appendChild(overlay);
     }
 
-    const photos = item.photos || [item.image];
+    const photos = item.photos && item.photos.length > 0 ? item.photos : [item.image];
     const mainPhoto = photos[0];
 
     const thumbsHtml = photos.length > 1 ? `
-      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:10px; margin-top:20px;">
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:12px; margin-top:25px;">
         ${photos.map((p, i) => `
           <div onclick="document.getElementById('gallery-main-img').src='${p}'; Array.from(this.parentElement.children).forEach(el=>el.style.borderColor='transparent'); this.style.borderColor='#f59e0b'" 
-               style="aspect-ratio:1; border-radius:12px; overflow:hidden; cursor:pointer; border:2px solid ${i===0 ? '#f59e0b' : 'transparent'}; transition:all 0.2s;">
-            <img src="${p}" style="width:100%; height:100%; object-fit:cover;">
+               style="aspect-ratio:4/3; border-radius:14px; overflow:hidden; cursor:pointer; border:2px solid ${i === 0 ? '#f59e0b' : 'transparent'}; transition:all 0.2s; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+            <img src="${p}" style="width:100%; height:100%; object-fit:cover;" loading="lazy">
           </div>
         `).join('')}
       </div>
     ` : '';
 
     overlay.innerHTML = `
-      <div class="modal-content-premium" style="background:white; width:100%; max-width:1000px; max-height:95vh; border-radius:40px; overflow:hidden; display:flex; flex-direction:column; position:relative; box-shadow:0 50px 100px rgba(0,0,0,0.5); animation: modalEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
-        <button onclick="document.getElementById('gallery-modal-overlay').style.display='none'" style="position:absolute; top:25px; right:25px; background:white; border:none; width:48px; height:48px; border-radius:50%; cursor:pointer; font-size:28px; z-index:100; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 20px rgba(0,0,0,0.1); transition:all 0.3s;" onmouseenter="this.style.transform='rotate(90deg)'" onmouseleave="this.style.transform='rotate(0deg)'">&times;</button>
+      <div class="modal-content-premium" style="background:white; width:100%; max-width:1100px; max-height:95vh; border-radius:40px; overflow:hidden; display:flex; flex-direction:column; position:relative; box-shadow:0 50px 100px rgba(0,0,0,0.6); animation: modalEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+        <button onclick="document.getElementById('gallery-modal-overlay').style.display='none'" style="position:absolute; top:25px; right:25px; background:white; border:none; width:54px; height:54px; border-radius:50%; cursor:pointer; font-size:32px; z-index:100; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 30px rgba(0,0,0,0.15); transition:all 0.3s; color:#0f172a;" onmouseenter="this.style.transform='rotate(90deg) scale(1.1)'" onmouseleave="this.style.transform='rotate(0deg) scale(1)'">&times;</button>
         
-        <div style="flex: 1; overflow-y:auto; scrollbar-width:none;">
-          <div style="height:500px; position:relative; background:#f1f5f9;">
-            <img id="gallery-main-img" src="${mainPhoto}" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.3s ease;">
-            ${item.hasVideo ? `<div style="position:absolute; inset:0; background:rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center;">
-                <div style="width:90px; height:90px; background:#f59e0b; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 0 50px rgba(245,158,11,0.5);">
-                    <svg width="44" height="44" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                </div>
-            </div>` : ''}
+        <div style="flex: 1; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none;">
+          <div style="height:550px; position:relative; background:#f1f5f9; overflow:hidden;">
+            <img id="gallery-main-img" src="${mainPhoto}" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.4s ease;" onclick="window.open(this.src, '_blank')">
+            <div style="position:absolute; bottom:20px; right:20px; background:rgba(0,0,0,0.5); color:white; padding:8px 16px; border-radius:99px; font-size:12px; backdrop-filter:blur(5px); pointer-events:none;">
+              Kliknutím na obrázek jej otevřete v plné velikosti
+            </div>
           </div>
           
-          <div style="padding:50px; background:white;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:30px; margin-bottom:40px;">
+          <div style="padding:60px; background:white;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:50px; margin-bottom:40px;">
               <div style="flex:1; min-width:300px;">
-                <div style="color:#f59e0b; font-weight:800; text-transform:uppercase; font-size:14px; margin-bottom:12px; letter-spacing:0.2em;">PROJEKT • ${item.category}</div>
-                <h2 style="font-size:42px; font-weight:900; color:#0f172a; line-height:1.1; margin-bottom:20px; letter-spacing:-0.04em;">${item.title}</h2>
-                <div class="w-20 h-1.5 bg-amber-500 rounded-full mb-8"></div>
-                <p style="font-size:18px; line-height:1.8; color:#475569; font-weight:500; margin:0;">${item.description}</p>
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+                   <span style="color:#f59e0b; font-weight:800; text-transform:uppercase; font-size:13px; letter-spacing:0.15em; background:#fff7ed; padding:5px 15px; border-radius:99px;">${item.category}</span>
+                   ${item.location ? `<span style="background:#f1f5f9; color:#64748b; font-weight:700; font-size:13px; padding:5px 15px; border-radius:99px;">📍 ${item.location}</span>` : ''}
+                   ${item.duration ? `<span style="background:#f1f5f9; color:#64748b; font-weight:700; font-size:13px; padding:5px 15px; border-radius:99px;">⏱ ${item.duration}</span>` : ''}
+                </div>
+                <h2 style="font-size:48px; font-weight:900; color:#0f172a; line-height:1.1; margin-bottom:25px; letter-spacing:-0.03em;">${item.title}</h2>
+                <div class="w-24 h-2 bg-amber-500 rounded-full mb-10"></div>
+                <div style="font-size:19px; line-height:1.9; color:#475569; font-weight:500; margin-bottom:40px;">${item.description}</div>
                 
+                <h4 style="font-weight:900; text-transform:uppercase; font-size:14px; letter-spacing:0.1em; color:#94a3b8; margin-bottom:20px;">Galerie záběrů z realizace</h4>
                 ${thumbsHtml}
               </div>
               
-              <div style="width:100%; max-width:340px; background:#0f172a; padding:40px; border-radius:32px; color:white; box-shadow:0 25px 50px rgba(15,23,42,0.2);">
-                <h4 style="font-weight:900; font-size:22px; margin-bottom:12px; line-height:1.2;">Zaujal vás tento výsledek?</h4>
-                <p style="font-size:15px; opacity:0.7; margin-bottom:30px; line-height:1.6;">Rádi pro vás připravíme nezávaznou kalkulaci zdarma.</p>
-                <button onclick="document.getElementById('gallery-modal-overlay').style.display='none'; setTimeout(() => document.getElementById('ai-chat-launcher').click(), 200)" 
-                  style="width:100%; background:#f59e0b; color:white; border:none; padding:18px; border-radius:18px; font-weight:900; cursor:pointer; font-size:14px; letter-spacing:0.05em; text-transform:uppercase; transition:all 0.3s ease; box-shadow:0 10px 20px rgba(245, 158, 11, 0.3);"
-                  onmouseenter="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 15px 30px rgba(245, 158, 11, 0.4)'"
-                  onmouseleave="this.style.transform='translateY(0)'">
-                  CHCI STEJNÝ VÝSLEDEK 💬
+              <div style="width:100%; max-width:380px; background:#0f172a; padding:50px; border-radius:40px; color:white; box-shadow:0 30px 60px rgba(15,23,42,0.3); position:sticky; top:20px;">
+                <h4 style="font-weight:900; font-size:26px; margin-bottom:15px; line-height:1.2;">Chcete stejný výsledek u vás?</h4>
+                <p style="font-size:16px; opacity:0.8; margin-bottom:35px; line-height:1.7;">Zanechte nám vzkaz nebo si nechte spočítat orientační cenu přes náš AI chat.</p>
+                <button onclick="document.getElementById('gallery-modal-overlay').style.display='none'; setTimeout(() => document.getElementById('ai-chat-launcher').click(), 300)" 
+                  style="width:100%; background:#f59e0b; color:white; border:none; padding:22px; border-radius:22px; font-weight:900; cursor:pointer; font-size:15px; letter-spacing:0.05em; text-transform:uppercase; transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:0 15px 30px rgba(245, 158, 11, 0.3);"
+                  onmouseenter="this.style.transform='translateY(-5px) scale(1.02)'; this.style.boxShadow='0 20px 40px rgba(245, 158, 11, 0.4)'"
+                  onmouseleave="this.style.transform='translateY(0) scale(1)'">
+                  CHCI NEZÁVAZNOU KALKULACI 💬
                 </button>
+                <div style="margin-top:30px; display:flex; align-items:center; gap:15px; opacity:0.6;">
+                  <div style="width:10px; height:10px; background:#22c55e; border-radius:50%;"></div>
+                  <span style="font-size:13px; font-weight:700;">Specialista online</span>
+                </div>
               </div>
             </div>
           </div>
@@ -279,12 +286,17 @@ const observeAll = () => {
       </div>
       <style>
         @keyframes modalEnter {
-          from { opacity:0; transform:scale(0.9) translateY(30px); }
+          from { opacity:0; transform:scale(0.95) translateY(40px); }
           to { opacity:1; transform:scale(1) translateY(0); }
         }
         .modal-content-premium::-webkit-scrollbar { display: none; }
+        .gallery-item-v:hover .gallery-item-overlay { opacity: 1 !important; display: flex !important; }
+        .gallery-item-v:hover .gallery-item-overlay span { transform: translateY(0) !important; }
       </style>
     `;
+    overlay.style.display = 'flex';
+  };
+
     overlay.style.display = 'flex';
   };
 
@@ -321,27 +333,17 @@ const observeAll = () => {
           <div id="gallery-scroller-inner" style="display: flex; gap: 1.5rem; overflow-x: auto; scroll-behavior: smooth; padding: 1rem 0 3rem; -ms-overflow-style: none; scrollbar-width: none;">
             <style>#gallery-scroller-inner::-webkit-scrollbar { display: none; }</style>
             
-            <!-- Dark Style Gallery Items -->
-            ${galleryShowcaseData.map(item => `
-              <div class="gallery-item-v" onclick="window.nnf_openGallery(${item.id})" style="flex: 0 0 450px; background: #0f172a; border-radius: 2rem; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.3s ease;">
-                  <div style="height: 250px; position: relative;">
-                      <img src="${item.image}" style="width: 100%; height: 100%; object-fit: cover;">
-                      ${item.hasVideo ? `<div style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.4); display: flex; align-items: center; justify-content: center;">
-                          <div style="width: 60px; height: 60px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
-                              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                          </div>
-                      </div>` : ''}
-                  </div>
-                  <div style="padding: 2rem;">
-                      <div style="color: #f59e0b; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.1em; margin-bottom: 0.5rem;">${item.category}</div>
-                      <h3 style="color: white; font-weight: 800; font-size: 1.25rem; margin-bottom: 1rem;">${item.title}</h3>
-                      <div style="color: #94a3b8; font-size: 0.875rem; line-height: 1.6;">${item.description.substring(0, 80)}...</div>
-                  </div>
-              </div>
-            `).join('')}
+            <!-- Dynamic Gallery Track -->
+            <div id="gallery-track-placeholder" style="display:flex; gap:1.5rem;">
+               <div style="flex:0 0 450px; height:400px; background:#f1f5f9; border-radius:2rem; animate:pulse 2s infinite;"></div>
+               <div style="flex:0 0 450px; height:400px; background:#f1f5f9; border-radius:2rem; animate:pulse 2s infinite; opacity:0.5;"></div>
+            </div>
           </div>
         </div>
       `;
+
+      fetchGalleryData();
+
 
 
       // JS Scroll Logic
@@ -353,19 +355,19 @@ const observeAll = () => {
 
       const performJump = (dir) => {
         const jumpAmount = scroller.clientWidth > 1000 ? 474 : 350; // Dynamic jump amount based on card width
-        scroller.scrollBy({left: dir * jumpAmount, behavior: 'smooth'});
+        scroller.scrollBy({ left: dir * jumpAmount, behavior: 'smooth' });
       };
 
       const startAutoJump = () => {
-         scrollInterval = setInterval(() => {
-            if (!isPaused) {
-                if (scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 100) {
-                   scroller.scrollTo({left: 0, behavior: 'smooth'});
-                } else {
-                   performJump(1);
-                }
+        scrollInterval = setInterval(() => {
+          if (!isPaused) {
+            if (scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 100) {
+              scroller.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+              performJump(1);
             }
-         }, 5000);
+          }
+        }, 5000);
       };
 
       startAutoJump();
@@ -382,7 +384,7 @@ const observeAll = () => {
   const socialLinks = document.querySelectorAll('footer a[href*="facebook.com"], footer a[href*="instagram.com"], footer a[href*="linkedin.com"], footer a[href*="youtube.com"], footer a[href*="tiktok.com"]');
   if (socialLinks.length > 0) {
     const socialParent = socialLinks[0].closest('ul') || socialLinks[0].parentElement;
-    
+
     // Senior CTO: Inject TikTok if missing
     const hasTikTok = Array.from(socialLinks).some(l => l.href.includes('tiktok.com'));
     if (!hasTikTok && socialParent) {
@@ -393,7 +395,7 @@ const observeAll = () => {
       ttLi.appendChild(ttA);
       socialParent.appendChild(ttLi);
       // Re-run selector to include the new link
-      return observeAll(); 
+      return observeAll();
     }
 
     if (socialParent && !socialParent.dataset.rowified) {
@@ -441,13 +443,13 @@ const observeAll = () => {
         }
 
         link.innerHTML = iconSvg;
-        link.onmouseenter = () => { 
-          link.style.transform = 'translateY(-4px)'; 
-          link.style.backgroundColor = 'rgba(245, 158, 11, 0.2)'; 
+        link.onmouseenter = () => {
+          link.style.transform = 'translateY(-4px)';
+          link.style.backgroundColor = 'rgba(245, 158, 11, 0.2)';
           link.style.opacity = '1';
         };
-        link.onmouseleave = () => { 
-          link.style.transform = 'translateY(0)'; 
+        link.onmouseleave = () => {
+          link.style.transform = 'translateY(0)';
           link.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
           link.style.opacity = '1';
         };
@@ -579,7 +581,7 @@ const clearPreloader = () => {
   if (preloader) {
     preloader.style.opacity = '0';
     preloader.style.visibility = 'hidden';
-    setTimeout(() => { if(preloader.parentNode) preloader.remove(); }, 500);
+    setTimeout(() => { if (preloader.parentNode) preloader.remove(); }, 500);
   }
   document.body.style.opacity = '1';
   document.body.style.overflow = 'auto';
@@ -593,7 +595,7 @@ const initApp = () => {
     console.warn('Initial app injection error:', e);
   }
   // Independent preloader clearing
-  setTimeout(clearPreloader, 100); 
+  setTimeout(clearPreloader, 100);
 };
 
 // Start initialization

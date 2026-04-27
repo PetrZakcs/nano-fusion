@@ -74,7 +74,12 @@ export function RealizationDetailClient({
     }
   }
 
+
   const handlePhotoUpload = async (files: FileList) => {
+    if (photos.length + files.length > 10) {
+      toast.error('Maximální počet fotografií je 10. Prosím vyberte méně souborů.')
+      return
+    }
     setUploading(true)
     try {
       for (const file of Array.from(files)) {
