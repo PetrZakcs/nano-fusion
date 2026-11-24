@@ -26,5 +26,8 @@ Tento projekt je profesionální webová prezentace a administrativní systém p
 
 ## Administrace (CMS)
 
-Vstup do správy je možný přes odkaz v patičce nebo přidáním `#admin` do URL.
-Heslo: `admin123`
+Vstup skrze vlastní přihlašovací stránku, super admin může zadávat různé úrovně přístupu
+
+## Aktuální stav
+
+Projekt si klient převzal pod sebe a spolupráce tím skončila
